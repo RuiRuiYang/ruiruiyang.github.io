@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="数据库,Oracle," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="之前有朋友问到在Oracle数据库中建立了索引，但是在查询的时候却没有用到索引，最近正好也在学习Oracle数据库，于是对数据库索引进行了一个简单的归纳。">
+<meta name="keywords" content="数据库,Oracle">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Oracle学习--索引的使用归纳">
+<meta property="og:url" content="http://yoursite.com/2018/08/28/Oracle学习-索引的使用归纳/index.html">
+<meta property="og:site_name" content="Rui&#39;s Blog">
+<meta property="og:description" content="之前有朋友问到在Oracle数据库中建立了索引，但是在查询的时候却没有用到索引，最近正好也在学习Oracle数据库，于是对数据库索引进行了一个简单的归纳。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2018-08-28T14:50:17.444Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Oracle学习--索引的使用归纳">
+<meta name="twitter:description" content="之前有朋友问到在Oracle数据库中建立了索引，但是在查询的时候却没有用到索引，最近正好也在学习Oracle数据库，于是对数据库索引进行了一个简单的归纳。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/08/28/Oracle学习-索引的使用归纳/"/>
+
+
+
+
+
+  <title>Oracle学习--索引的使用归纳 | Rui's Blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Rui's Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/28/Oracle学习-索引的使用归纳/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Rui Yang">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Rui's Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Oracle学习--索引的使用归纳</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2018-08-28T20:58:25+08:00">
+                2018-08-28
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>之前有朋友问到在Oracle数据库中建立了索引，但是在查询的时候却没有用到索引，最近正好也在学习Oracle数据库，于是对数据库索引进行了一个简单的归纳。<br><a id="more"></a></p>
+<h2 id="一句话介绍索引"><a href="#一句话介绍索引" class="headerlink" title="一句话介绍索引"></a>一句话介绍索引</h2><p>索引目的就是为了提高记录的检索速度，其基本原理就是B-。</p>
+<h2 id="什么情况下会使用索引"><a href="#什么情况下会使用索引" class="headerlink" title="什么情况下会使用索引"></a>什么情况下会使用索引</h2><ul>
+<li>一般来说，对于单列索引，只要SELECT、DELETE、UPDATE语句的WHERE条件中有此列，就会使用此索引。</li>
+<li>对于多列索引，例如一个表中的主键（UID,Name,Age三个字段联合索引），只有当WHERE条件中包含索引中的前一个或几个列时才会用到索引。如UID条件，UID、Age组合条件，UID、Name、Age组合条件，而仅有Name、Age条件，没有UID条件是不会使用索引的。因为此索引是先根据UID排序，UID相同的再根据Name排序，UID、Name相同的再根据Age排序。</li>
+</ul>
+<h2 id="什么情况下要为表建立索引"><a href="#什么情况下要为表建立索引" class="headerlink" title="什么情况下要为表建立索引"></a>什么情况下要为表建立索引</h2><ul>
+<li>列经常被用在WHERE条件中或连接条件中。</li>
+<li>列的数据比较分散，即重复值不多。</li>
+<li>列包含大量的空值。</li>
+<li>几个列经常一起用在WHERE条件或连接条件中（联合索引）。</li>
+<li>大部分的检索只返回大表中的小部分记录（2%~5%）。</li>
+</ul>
+<h2 id="什么情况不应该为表建立索引"><a href="#什么情况不应该为表建立索引" class="headerlink" title="什么情况不应该为表建立索引"></a>什么情况不应该为表建立索引</h2><ul>
+<li>表的数据量不大。</li>
+<li>列很少用在查询条件中。</li>
+<li>大部分的检索都返回大量的数据。　</li>
+<li>表的Update操作很频繁。</li>
+</ul>
+<h2 id="索引的代价"><a href="#索引的代价" class="headerlink" title="索引的代价"></a>索引的代价</h2><p>使用索引时也必须注意到它的代价。索引需要空间来存储，也需要定期维护，每当有记录在表中增减或索引列被修改时，索引本身也会被修改。这意味着每条记录的INSERT、DELETE、UPDATE    将为此多付出4、5此的磁盘I/O。因为索引需要额外的存储空间和处理，那些不必要的索引反而会使查询反应时间变慢。</p>
+<h2 id="索引的注意事项"><a href="#索引的注意事项" class="headerlink" title="索引的注意事项"></a>索引的注意事项</h2><ul>
+<li>建议写好复杂的sql语句后，自己查看下执行计划，看是全表扫描还是用的索引。</li>
+<li>为什么没有使用我的索引。</li>
+</ul>
+<ol>
+<li>索引中的前导列没有作为查询条件。</li>
+<li>条件列包含函数但没有创建函数索引。</li>
+<li>表增长过快，统计数据过时。</li>
+<li>查询的结果集过大，此时如果用了索引，实际上反而会更慢。</li>
+<li>类型不匹配。</li>
+<li><p>在索引列使用了计算。<br>例如：WHERE子句中，如果索引列是函数的一部分，优化器将不使用索引而使用全表扫描。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> …</span><br><span class="line"><span class="keyword">FROM</span> DEPT</span><br><span class="line"><span class="keyword">WHERE</span> SAL * <span class="number">12</span> &gt; <span class="number">25000</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">SELECT</span> …</span><br><span class="line"><span class="keyword">FROM</span> DEPT</span><br><span class="line"><span class="keyword">WHERE</span> SAL &gt; <span class="number">25000</span>/<span class="number">12</span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>避免改变索引列的类型。<br>例如：EMP_TYPE是一个字符类型的索引列。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> …</span><br><span class="line"><span class="keyword">FROM</span> EMP</span><br><span class="line"><span class="keyword">WHERE</span> EMP_TYPE = <span class="number">123</span>;</span><br></pre></td></tr></table></figure>
+<p> 这个语句被ORACLE转换为:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> …</span><br><span class="line"><span class="keyword">FROM</span> EMP</span><br><span class="line"><span class="keyword">WHERE</span> TO_NUMBER(EMP_TYPE) = <span class="number">123</span>;</span><br></pre></td></tr></table></figure>
+<p> 因为内部发生的类型转换, 这个索引将不被用到!</p>
+</li>
+<li><p>其他需要当心的WHERE子句。<br>不使用索引:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">      <span class="keyword">SELECT</span> ACCOUNT_NAME</span><br><span class="line"><span class="keyword">FROM</span> <span class="keyword">TRANSACTION</span></span><br><span class="line">      <span class="keyword">WHERE</span> AMOUNT != <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<p> 使用索引:</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">      <span class="keyword">SELECT</span> ACCOUNT_NAME</span><br><span class="line"><span class="keyword">FROM</span> <span class="keyword">TRANSACTION</span></span><br><span class="line">      <span class="keyword">WHERE</span> AMOUNT &gt; <span class="number">0</span>;</span><br></pre></td></tr></table></figure></li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/数据库/" rel="tag"># 数据库</a>
+          
+            <a href="/tags/Oracle/" rel="tag"># Oracle</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">Rui Yang</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">1</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                
+                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-name">标签</span>
+                
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#一句话介绍索引"><span class="nav-number">1.</span> <span class="nav-text">一句话介绍索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#什么情况下会使用索引"><span class="nav-number">2.</span> <span class="nav-text">什么情况下会使用索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#什么情况下要为表建立索引"><span class="nav-number">3.</span> <span class="nav-text">什么情况下要为表建立索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#什么情况不应该为表建立索引"><span class="nav-number">4.</span> <span class="nav-text">什么情况不应该为表建立索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#索引的代价"><span class="nav-number">5.</span> <span class="nav-text">索引的代价</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#索引的注意事项"><span class="nav-number">6.</span> <span class="nav-text">索引的注意事项</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Rui Yang</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
